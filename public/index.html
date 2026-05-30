@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PW Portal — Physics Wallah</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --orange: #FF6B00;
+      --orange2: #FF9A3C;
+      --bg: #080810;
+      --surface: #10101C;
+      --surface2: #161628;
+      --border: rgba(255,107,0,0.15);
+      --border2: rgba(255,255,255,0.06);
+      --text: #F2EFE9;
+      --muted: #666;
+      --muted2: #999;
+      --green: #22c55e;
+      --red: #ef4444;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Background ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 0% 0%, rgba(255,107,0,0.08) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 40% at 100% 100%, rgba(255,107,0,0.05) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── App Wrapper ── */
+    #app {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+    }
+
+    /* ── LOGIN SCREEN ── */
+    #loginScreen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .brand {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .brand-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 68px; height: 68px;
+      background: linear-gradient(135deg, var(--orange), var(--orange2));
+      border-radius: 20px;
+      font-size: 30px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 32px rgba(255,107,0,0.35);
+      position: relative;
+    }
+
+    .brand-mark::after {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 23px;
+      border: 1.5px solid rgba(255,107,0,0.3);
+      animation: ringPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes ringPulse {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.05); }
+    }
+
+    .brand h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .brand p { font-size: 14px; color: var(--muted2); margin-top: 4px; }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 10%, var(--orange) 50%, transparent 90%);
+      opacity: 0.6;
+    }
+
+    /* Steps dots */
+    .stepper {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 28px;
+    }
+
+    .sdot {
+      height: 6px;
+      border-radius: 3px;
+      transition: all 0.35s ease;
+      background: rgba(255,107,0,0.2);
+      width: 6px;
+    }
+
+    .sdot.active { width: 28px; background: var(--orange); }
+    .sdot.done { background: var(--orange); opacity: 0.6; }
+
+    /* Step content */
+    .step { display: none; }
+    .step.active { display: block; animation: fadeSlideUp 0.4s ease both; }
+
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+    }
+
+    .step-sub {
+      font-size: 13px;
+      color: var(--muted2);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    /* Input */
+    .field { margin-bottom: 16px; }
+
+    .field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted2);
+      margin-bottom: 8px;
+    }
+
+    .input-wrap { position: relative; }
+
+    .prefix {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--orange);
+      pointer-events: none;
+    }
+
+    input[type="tel"], input[type="text"] {
+      width: 100%;
+      background: #0C0C18;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 15px;
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input.has-prefix { padding-left: 44px; }
+
+    input:focus {
+      border-color: rgba(255,107,0,0.5);
+      box-shadow: 0 0 0 3px rgba(255,107,0,0.1);
+    }
+
+    input::placeholder { color: #333; }
+
+    /* OTP boxes */
+    .otp-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .otp-row input {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      padding: 12px 0;
+      font-family: var(--mono);
+      letter-spacing: 0;
+    }
+
+    /* Button */
+    .btn {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+      margin-top: 4px;
+      letter-spacing: 0.2px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--orange), var(--orange2));
+      color: white;
+      box-shadow: 0 4px 20px rgba(255,107,0,0.28);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 28px rgba(255,107,0,0.4);
+    }
+
+    .btn-primary:active { transform: none; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-loading::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .spinner {
+      display: none;
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 20px; height: 20px;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-top-color: #fff;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+    .btn.loading .spinner { display: block; }
+    .btn.loading .btn-label { opacity: 0; }
+
+    /* Alert */
+    .alert {
+      display: none;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      gap: 9px;
+      align-items: flex-start;
+      line-height: 1.5;
+    }
+
+    .alert.show { display: flex; }
+    .alert-err { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: #fca5a5; }
+    .alert-ok { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); color: #86efac; }
+
+    /* Resend */
+    .resend {
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted2);
+      margin-top: 16px;
+    }
+
+    .resend button {
+      background: none;
+      border: none;
+      color: var(--orange);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+    }
+
+    /* Footer */
+    .login-footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.3px;
+    }
+
+    /* ─────────────────────────────────────────── */
+    /* ── DASHBOARD ── */
+    #dashScreen { display: none; }
+
+    /* Top bar */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border2);
+      background: rgba(16,16,28,0.9);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .topbar-logo {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--orange), var(--orange2));
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .topbar-nav {
+      display: flex;
+      gap: 6px;
+    }
+
+    .nav-btn {
+      background: none;
+      border: 1px solid var(--border2);
+      border-radius: 9px;
+      color: var(--muted2);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 7px 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .nav-btn:hover, .nav-btn.active {
+      border-color: rgba(255,107,0,0.35);
+      color: var(--orange);
+      background: rgba(255,107,0,0.06);
+    }
+
+    .dash-content {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    /* Panels */
+    .panel { display: none; }
+    .panel.active { display: block; animation: fadeSlideUp 0.35s ease both; }
+
+    /* ── Token Panel ── */
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted2);
+      margin-bottom: 16px;
+    }
+
+    .token-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .token-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .token-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--orange);
+    }
+
+    .token-status {
+      font-size: 12px;
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.25);
+      color: #86efac;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .token-value {
+      background: #08080F;
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--orange2);
+      word-break: break-all;
+      line-height: 1.6;
+      position: relative;
+    }
+
+    .token-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .chip-btn {
+      background: rgba(255,107,0,0.1);
+      border: 1px solid rgba(255,107,0,0.2);
+      border-radius: 8px;
+      color: var(--orange);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 7px 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .chip-btn:hover { background: rgba(255,107,0,0.18); }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .info-cell {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .info-cell .label { font-size: 11px; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+    .info-cell .value { font-size: 15px; font-weight: 600; }
+    .info-cell .value.mono { font-family: var(--mono); font-size: 13px; }
+
+    /* ── Batches Panel ── */
+    .batch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    .batch-tile {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .batch-tile:hover {
+      border-color: rgba(255,107,0,0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+
+    .batch-thumb {
+      width: 100%;
+      height: 140px;
+      background: linear-gradient(135deg, #1a1a2e, #0f0f20);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .batch-thumb img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .batch-thumb .thumb-fallback {
+      width: 100%; height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      background: linear-gradient(135deg, rgba(255,107,0,0.15) 0%, rgba(255,107,0,0.05) 100%);
+    }
+
+    .batch-body { padding: 16px; }
+
+    .batch-tile-name {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+
+    .batch-tile-id {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .batch-tile-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(255,107,0,0.1);
+      border: 1px solid rgba(255,107,0,0.2);
+      color: var(--orange);
+    }
+
+    .view-link {
+      font-size: 12px;
+      color: var(--muted2);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.2s;
+    }
+
+    .batch-tile:hover .view-link { color: var(--orange); }
+
+    /* ── Batch Detail Panel ── */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      color: var(--muted2);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 0;
+      margin-bottom: 20px;
+      transition: color 0.2s;
+    }
+
+    .back-btn:hover { color: var(--orange); }
+
+    .batch-detail-header {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      margin-bottom: 28px;
+      padding: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 16px;
+    }
+
+    .batch-detail-thumb {
+      width: 100px; height: 70px;
+      border-radius: 10px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: rgba(255,107,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+
+    .batch-detail-thumb img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    .batch-detail-info h2 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-bottom: 6px;
+    }
+
+    .batch-detail-info .bid {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* Subjects */
+    .subject-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .sub-tab {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      color: var(--muted2);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 9px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .sub-tab:hover, .sub-tab.active {
+      border-color: rgba(255,107,0,0.4);
+      color: var(--orange);
+      background: rgba(255,107,0,0.08);
+    }
+
+    /* Content list */
+    .content-type-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .type-chip {
+      background: #0C0C18;
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      color: var(--muted2);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .type-chip:hover, .type-chip.active {
+      border-color: rgba(255,107,0,0.35);
+      color: var(--orange);
+      background: rgba(255,107,0,0.06);
+    }
+
+    .content-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .content-item {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all 0.2s;
+    }
+
+    .content-item:hover {
+      border-color: rgba(255,107,0,0.25);
+      background: rgba(255,107,0,0.04);
+    }
+
+    .content-icon {
+      width: 42px; height: 42px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .icon-video { background: rgba(239,68,68,0.12); }
+    .icon-notes { background: rgba(59,130,246,0.12); }
+    .icon-exercise { background: rgba(34,197,94,0.12); }
+
+    .content-meta { flex: 1; min-width: 0; }
+
+    .content-name {
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+
+    .content-sub-info {
+      font-size: 12px;
+      color: var(--muted2);
+      display: flex;
+      gap: 12px;
+    }
+
+    .content-action {
+      font-size: 18px;
+      color: var(--muted);
+      opacity: 0.5;
+    }
+
+    .loading-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--muted2);
+    }
+
+    .loading-state .spin-icon {
+      width: 32px; height: 32px;
+      border: 2px solid rgba(255,107,0,0.2);
+      border-top-color: var(--orange);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--muted2);
+      font-size: 14px;
+    }
+
+    /* Pagination */
+    .page-row {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .page-btn {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      color: var(--muted2);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .page-btn:hover, .page-btn.active {
+      border-color: rgba(255,107,0,0.35);
+      color: var(--orange);
+      background: rgba(255,107,0,0.06);
+    }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,107,0,0.25); border-radius: 3px; }
+
+    @media (max-width: 600px) {
+      .topbar-nav .nav-btn span { display: none; }
+      .batch-grid { grid-template-columns: 1fr; }
+      .batch-detail-header { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══════════════ LOGIN SCREEN ═══════════════ -->
+  <div id="loginScreen">
+    <div class="login-box">
+      <div class="brand">
+        <div class="brand-mark">PW</div>
+        <h1>Physics Wallah</h1>
+        <p>Login to access your batches &amp; content</p>
+      </div>
+
+      <div class="card">
+        <div class="stepper">
+          <div class="sdot active" id="sd1"></div>
+          <div class="sdot" id="sd2"></div>
+        </div>
+
+        <div class="alert" id="alertBox">
+          <span id="alertIcon"></span>
+          <span id="alertMsg"></span>
+        </div>
+
+        <!-- Step 1: Phone -->
+        <div class="step active" id="s1">
+          <div class="step-title">Enter Mobile Number</div>
+          <div class="step-sub">We'll send a 6-digit OTP to verify your PW account</div>
+
+          <div class="field">
+            <label>Mobile Number</label>
+            <div class="input-wrap">
+              <span class="prefix">+91</span>
+              <input id="phoneInput" class="has-prefix" type="tel" placeholder="98XXXXXXXX" maxlength="10" />
+            </div>
+          </div>
+
+          <button class="btn btn-primary" id="otpBtn" onclick="sendOtp()">
+            <span class="spinner"></span>
+            <span class="btn-label">Send OTP →</span>
+          </button>
+        </div>
+
+        <!-- Step 2: OTP -->
+        <div class="step" id="s2">
+          <div class="step-title">Verify OTP</div>
+          <div class="step-sub">Enter the 6-digit code sent to <strong id="phoneDisplay"></strong></div>
+
+          <div class="field">
+            <label>OTP Code</label>
+            <div class="otp-row">
+              <input type="tel" maxlength="1" id="o1" oninput="otpMove(this,'o2')" onkeydown="otpBack(event,this,null)" />
+              <input type="tel" maxlength="1" id="o2" oninput="otpMove(this,'o3')" onkeydown="otpBack(event,this,'o1')" />
+              <input type="tel" maxlength="1" id="o3" oninput="otpMove(this,'o4')" onkeydown="otpBack(event,this,'o2')" />
+              <input type="tel" maxlength="1" id="o4" oninput="otpMove(this,'o5')" onkeydown="otpBack(event,this,'o3')" />
+              <input type="tel" maxlength="1" id="o5" oninput="otpMove(this,'o6')" onkeydown="otpBack(event,this,'o4')" />
+              <input type="tel" maxlength="1" id="o6" oninput="otpMove(this,null)" onkeydown="otpBack(event,this,'o5')" />
+            </div>
+          </div>
+
+          <button class="btn btn-primary" id="verifyBtn" onclick="verifyOtp()">
+            <span class="spinner"></span>
+            <span class="btn-label">Verify &amp; Login →</span>
+          </button>
+
+          <div class="resend">
+            <span id="resendTimer">Resend OTP in <strong id="countdown">30s</strong></span>
+            <button id="resendBtn" style="display:none" onclick="resendOtp()">Resend OTP</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="login-footer">Powered by PW API Server &nbsp;·&nbsp; Unauthorized access prohibited</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ DASHBOARD ═══════════════ -->
+  <div id="dashScreen">
+    <div class="topbar">
+      <div class="topbar-brand">
+        <div class="topbar-logo">PW</div>
+        Physics Wallah
+      </div>
+      <div class="topbar-nav">
+        <button class="nav-btn active" id="nb-batches" onclick="showPanel('batches')"><span>📚 </span>Batches</button>
+        <button class="nav-btn" id="nb-token" onclick="showPanel('token')"><span>🔑 </span>Token</button>
+        <button class="nav-btn" id="nb-admin" onclick="showPanel('admin');loadAdminTokens()"><span>🗂 </span>Manager</button>
+        <button class="nav-btn" onclick="logout()" style="color:var(--red)">Logout</button>
+      </div>
+    </div>
+
+    <div class="dash-content">
+
+      <!-- ── Batches Panel ── -->
+      <div class="panel active" id="panelBatches">
+        <div class="section-title" style="margin-bottom:20px">Your Purchased Batches</div>
+        <div class="batch-grid" id="batchGrid">
+          <div class="loading-state"><div class="spin-icon"></div><div>Loading batches…</div></div>
+        </div>
+      </div>
+
+      <!-- ── Batch Detail Panel ── -->
+      <div class="panel" id="panelDetail">
+        <button class="back-btn" onclick="backToBatches()">← Back to Batches</button>
+
+        <div class="batch-detail-header" id="detailHeader"></div>
+
+        <div id="subjectSection">
+          <div class="section-title">Subjects</div>
+          <div class="subject-tabs" id="subjectTabs"></div>
+
+          <div class="content-type-row" id="contentTypeRow"></div>
+          <div id="contentListWrap"></div>
+        </div>
+      </div>
+
+      <!-- ── Admin Token Manager Panel ── -->
+      <div class="panel" id="panelAdmin">
+        <div class="section-title" style="margin-bottom:20px">🗂 Token Manager</div>
+
+        <!-- Add Token Box -->
+        <div class="token-card" style="margin-bottom:20px">
+          <div class="token-header">
+            <div class="token-label">➕ Manually Token Add Karo</div>
+          </div>
+          <div style="font-size:13px;color:var(--muted2);margin-bottom:12px;">Token paste karo → batches automatically detect honge + Telegram channel pe post honge</div>
+          <textarea id="adminTokenInput" placeholder="eyJ... token yahan paste karo" style="width:100%;background:#08080F;border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:12px;padding:12px;resize:vertical;min-height:80px;outline:none;margin-bottom:10px;"></textarea>
+          <input id="adminLabelInput" placeholder="Label (optional, e.g. Ayush PW)" style="width:100%;background:#08080F;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:10px 12px;outline:none;margin-bottom:12px;" />
+          <button class="btn btn-primary" id="adminAddBtn" onclick="adminAddToken()" style="width:100%">
+            <span class="spinner" id="adminAddSpinner" style="display:none"></span>
+            <span id="adminAddLabel">✅ Add Token & Fetch Batches</span>
+          </button>
+          <div id="adminAddResult" style="margin-top:10px;font-size:13px;"></div>
+        </div>
+
+        <!-- Saved Tokens List -->
+        <div class="section-title" style="margin-bottom:12px">💾 Saved Tokens</div>
+        <div id="adminTokenList">
+          <div class="loading-state"><div class="spin-icon"></div><div>Loading…</div></div>
+        </div>
+      </div>
+
+      <!-- ── Token Panel ── -->
+      <div class="panel" id="panelToken">
+        <div class="section-title" style="margin-bottom:20px">Session & Token Info</div>
+
+        <div class="token-card">
+          <div class="token-header">
+            <div class="token-label">🔑 Access Token (Bearer)</div>
+            <div class="token-status">✓ Active</div>
+          </div>
+          <div class="token-value" id="tokenValue">—</div>
+          <div class="token-actions">
+            <button class="chip-btn" onclick="copyToken()">📋 Copy Token</button>
+            <button class="chip-btn" onclick="copyBearer()">Copy Bearer Header</button>
+          </div>
+        </div>
+
+        <div class="section-title">How to Use Token</div>
+        <div class="token-card">
+          <div style="font-size:13px; color:var(--muted2); margin-bottom:12px; line-height:1.6;">
+            Kisi bhi protected endpoint ko call karne ke liye yeh header add karo:
+          </div>
+          <div class="token-value">Authorization: Bearer &lt;token&gt;</div>
+          <div style="margin-top:16px;">
+            <div class="section-title" style="margin-bottom:10px;">Available Endpoints</div>
+            <div id="endpointList" style="display:flex; flex-direction:column; gap:8px; font-size:12px; font-family:var(--mono); color:var(--muted2);"></div>
+          </div>
+        </div>
+
+        <div class="info-grid" id="sessionInfo"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  /* ─── State ─── */
+  let STATE = {
+    phone: '',
+    token: '',
+    batches: [],
+    currentBatch: null,
+    currentSubjectId: null,
+    currentContentType: 'exercises-notes-videos',
+    currentPage: 1,
+    subjects: [],
+    timerRef: null,
+    loginTime: null,
+  };
+
+  /* ─── Alert ─── */
+  function showAlert(msg, type = 'err') {
+    const box = document.getElementById('alertBox');
+    box.className = `alert show alert-${type}`;
+    document.getElementById('alertIcon').textContent = type === 'err' ? '⚠️' : '✅';
+    document.getElementById('alertMsg').textContent = msg;
+  }
+  function clearAlert() { document.getElementById('alertBox').className = 'alert'; }
+
+  /* ─── Login Steps ─── */
+  function goStep(n) {
+    [1,2].forEach(i => {
+      document.getElementById(`s${i}`).classList.toggle('active', i === n);
+      document.getElementById(`sd${i}`).className = 'sdot' + (i === n ? ' active' : i < n ? ' done' : '');
+    });
+    clearAlert();
+  }
+
+  /* ─── OTP Input ─── */
+  function otpMove(el, nextId) {
+    if (el.value.length >= 1 && nextId) document.getElementById(nextId).focus();
+  }
+  function otpBack(e, el, prevId) {
+    if (e.key === 'Backspace' && el.value === '' && prevId) document.getElementById(prevId).focus();
+  }
+  function getOtp() { return ['o1','o2','o3','o4','o5','o6'].map(id => document.getElementById(id).value).join(''); }
+
+  /* ─── Timer ─── */
+  function startTimer() {
+    let secs = 30;
+    document.getElementById('countdown').textContent = secs + 's';
+    document.getElementById('resendTimer').style.display = 'inline';
+    document.getElementById('resendBtn').style.display = 'none';
+    clearInterval(STATE.timerRef);
+    STATE.timerRef = setInterval(() => {
+      secs--;
+      document.getElementById('countdown').textContent = secs + 's';
+      if (secs <= 0) {
+        clearInterval(STATE.timerRef);
+        document.getElementById('resendTimer').style.display = 'none';
+        document.getElementById('resendBtn').style.display = 'inline';
+      }
+    }, 1000);
+  }
+
+  /* ─── setLoading ─── */
+  function setLoading(btnId, on) {
+    const btn = document.getElementById(btnId);
+    btn.classList.toggle('loading', on);
+    btn.disabled = on;
+  }
+
+  /* ─── Send OTP ─── */
+  async function sendOtp() {
+    const phone = document.getElementById('phoneInput').value.trim();
+    if (!/^\d{10}$/.test(phone)) return showAlert('Please enter a valid 10-digit mobile number');
+    STATE.phone = phone;
+    setLoading('otpBtn', true);
+    clearAlert();
+    try {
+      const res = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('phoneDisplay').textContent = '+91 ' + phone;
+        goStep(2);
+        startTimer();
+        document.getElementById('o1').focus();
+      } else {
+        showAlert(data.message || 'Failed to send OTP');
+      }
+    } catch (e) {
+      showAlert('Network error. Is the server running?');
+    } finally {
+      setLoading('otpBtn', false);
+    }
+  }
+
+  async function resendOtp() {
+    clearAlert();
+    try {
+      await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: STATE.phone }),
+      });
+      startTimer();
+      showAlert('OTP resent!', 'ok');
+    } catch { showAlert('Failed to resend'); }
+  }
+
+  /* ─── Verify OTP ─── */
+  async function verifyOtp() {
+    const otp = getOtp();
+    if (otp.length !== 6) return showAlert('Enter complete 6-digit OTP');
+    setLoading('verifyBtn', true);
+    clearAlert();
+    try {
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: STATE.phone, otp }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        STATE.token = data.token;
+        STATE.batches = data.batches;
+        STATE.loginTime = new Date().toISOString();
+        initDashboard();
+      } else {
+        showAlert(data.message || 'OTP verification failed');
+      }
+    } catch (e) {
+      showAlert('Network error. Please try again.');
+    } finally {
+      setLoading('verifyBtn', false);
+    }
+  }
+
+  /* ─── Dashboard Init ─── */
+  function initDashboard() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashScreen').style.display = 'block';
+    renderBatches();
+    setupTokenPanel();
+  }
+
+  /* ─── Panel Switch ─── */
+  function showPanel(name) {
+    ['batches','detail','token','admin'].forEach(p => {
+      const el = document.getElementById(`panel${p.charAt(0).toUpperCase()+p.slice(1)}`);
+      if (el) el.classList.toggle('active', p === name);
+    });
+    if (name !== 'detail') {
+      document.getElementById('panelDetail').classList.remove('active');
+    }
+    ['batches','token','admin'].forEach(n => {
+      const btn = document.getElementById(`nb-${n}`);
+      if (btn) btn.classList.toggle('active', n === name);
+    });
+  }
+
+  /* ─── Render Batches ─── */
+  function imgUrl(batch) {
+    if (batch.thumbnail && batch.thumbnail !== 'undefined') return batch.thumbnail;
+    return null;
+  }
+
+  function renderBatches() {
+    const grid = document.getElementById('batchGrid');
+    if (!STATE.batches.length) {
+      grid.innerHTML = '<div class="empty-state">📭 No purchased batches found</div>';
+      return;
+    }
+    const icons = ['📚','🔬','🧪','📐','🌍','💡','🎓','⚗️','📖','🔭'];
+    grid.innerHTML = STATE.batches.map((b, i) => {
+      const thumb = imgUrl(b);
+      const thumbHtml = thumb
+        ? `<img src="${escHtml(thumb)}" alt="" onerror="this.parentElement.innerHTML='<div class=\\'thumb-fallback\\'>${icons[i%icons.length]}</div>'" />`
+        : `<div class="thumb-fallback">${icons[i%icons.length]}</div>`;
+      return `
+        <div class="batch-tile" onclick="openBatch('${escHtml(b.id)}', ${i})">
+          <div class="batch-thumb">${thumbHtml}</div>
+          <div class="batch-body">
+            <div class="batch-tile-name">${escHtml(b.name)}</div>
+            <div class="batch-tile-id">${escHtml(b.id)}</div>
+            <div class="batch-tile-footer">
+              <span class="badge">${escHtml(b.subject || 'Batch')}</span>
+              <span class="view-link">View Details →</span>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  /* ─── Open Batch ─── */
+  async function openBatch(batchId, idx) {
+    STATE.currentBatch = STATE.batches[idx];
+    STATE.currentSubjectId = null;
+    STATE.subjects = [];
+
+    showPanel('detail');
+    document.getElementById('panelBatches').classList.remove('active');
+    document.getElementById('panelDetail').classList.add('active');
+
+    // header
+    const b = STATE.currentBatch;
+    const thumb = imgUrl(b);
+    const icons = ['📚','🔬','🧪','📐','🌍','💡','🎓','⚗️'];
+    document.getElementById('detailHeader').innerHTML = `
+      <div class="batch-detail-thumb">
+        ${thumb
+          ? `<img src="${escHtml(thumb)}" alt="" onerror="this.outerHTML='<span style=\\'font-size:28px\\'>${icons[idx%icons.length]}</span>'" />`
+          : `<span style="font-size:28px">${icons[idx%icons.length]}</span>`}
+      </div>
+      <div class="batch-detail-info">
+        <h2>${escHtml(b.name)}</h2>
+        <div class="bid">${escHtml(batchId)}</div>
+      </div>`;
+
+    // fetch subjects
+    document.getElementById('subjectTabs').innerHTML = '<div style="color:var(--muted2);font-size:13px">Loading subjects…</div>';
+    document.getElementById('contentListWrap').innerHTML = '';
+    document.getElementById('contentTypeRow').innerHTML = '';
+
+    try {
+      const res = await fetch(`/api/batches/${batchId}`, {
+        headers: { 'Authorization': `Bearer ${STATE.token}` }
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        const subjects = data.data.subjects || [];
+        STATE.subjects = subjects;
+        renderSubjectTabs(batchId, subjects);
+        if (subjects.length > 0) loadSubjectContent(batchId, subjects[0]._id, 0);
+      } else {
+        document.getElementById('subjectTabs').innerHTML = `<div style="color:var(--red);font-size:13px">${data.message || 'Failed to load subjects'}</div>`;
+      }
+    } catch (e) {
+      document.getElementById('subjectTabs').innerHTML = `<div style="color:var(--red);font-size:13px">Error: ${e.message}</div>`;
+    }
+  }
+
+  function renderSubjectTabs(batchId, subjects) {
+    if (!subjects.length) {
+      document.getElementById('subjectTabs').innerHTML = '<div style="color:var(--muted2);font-size:13px">No subjects found</div>';
+      return;
+    }
+    document.getElementById('subjectTabs').innerHTML = subjects.map((s, i) =>
+      `<button class="sub-tab ${i===0?'active':''}" id="st-${s._id}" onclick="subTabClick('${batchId}','${s._id}',${i})">${escHtml(s.subject)}</button>`
+    ).join('');
+  }
+
+  function subTabClick(batchId, subId, idx) {
+    document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(`st-${subId}`).classList.add('active');
+    STATE.currentSubjectId = subId;
+    STATE.currentPage = 1;
+    loadSubjectContent(batchId, subId, idx);
+  }
+
+  /* ─── Load Content ─── */
+  async function loadSubjectContent(batchId, subjectId, idx) {
+    STATE.currentSubjectId = subjectId;
+    STATE.currentPage = 1;
+    renderContentTypes(batchId, subjectId);
+    await fetchContent(batchId, subjectId, STATE.currentContentType, 1);
+  }
+
+  function renderContentTypes(batchId, subjectId) {
+    const types = [
+      { key: 'exercises-notes-videos', label: '📁 All' },
+      { key: 'videos', label: '🎥 Videos' },
+      { key: 'notes', label: '📄 Notes' },
+      { key: 'DppVideos', label: '📝 DPP Videos' },
+      { key: 'DppNotes', label: '📋 DPP Notes' },
+    ];
+    document.getElementById('contentTypeRow').innerHTML = types.map(t =>
+      `<button class="type-chip ${t.key===STATE.currentContentType?'active':''}" id="ct-${t.key}" onclick="switchContentType('${batchId}','${subjectId}','${t.key}')">${t.label}</button>`
+    ).join('');
+  }
+
+  async function switchContentType(batchId, subjectId, type) {
+    STATE.currentContentType = type;
+    STATE.currentPage = 1;
+    document.querySelectorAll('.type-chip').forEach(c => c.classList.remove('active'));
+    const el = document.getElementById(`ct-${type}`);
+    if (el) el.classList.add('active');
+    await fetchContent(batchId, subjectId, type, 1);
+  }
+
+  async function fetchContent(batchId, subjectId, contentType, page) {
+    const wrap = document.getElementById('contentListWrap');
+    wrap.innerHTML = '<div class="loading-state"><div class="spin-icon"></div><div>Loading content…</div></div>';
+    try {
+      const res = await fetch(
+        `/api/batches/${batchId}/subjects/${subjectId}/contents?page=${page}&contentType=${contentType}`,
+        { headers: { 'Authorization': `Bearer ${STATE.token}` } }
+      );
+      const data = await res.json();
+      if (data.success) renderContentList(data.data, batchId, subjectId, contentType, page);
+      else wrap.innerHTML = `<div class="empty-state">⚠️ ${data.message || 'Failed to load content'}</div>`;
+    } catch (e) {
+      wrap.innerHTML = `<div class="empty-state">⚠️ Error: ${e.message}</div>`;
+    }
+  }
+
+  function renderContentList(items, batchId, subjectId, contentType, page) {
+    const wrap = document.getElementById('contentListWrap');
+    if (!items || !items.length) {
+      wrap.innerHTML = '<div class="empty-state">📭 No content found for this type</div>';
+      return;
+    }
+
+    const rows = items.map(item => {
+      const type = item.contentType || item.type || '';
+      let icon = '📄'; let iconClass = 'icon-notes';
+      if (type.toLowerCase().includes('video') || item.videoUrl) { icon = '🎥'; iconClass = 'icon-video'; }
+      else if (type.toLowerCase().includes('exercise') || type.toLowerCase().includes('dpp')) { icon = '📝'; iconClass = 'icon-exercise'; }
+
+      const dur = item.duration ? `⏱ ${Math.round(item.duration/60)} min` : '';
+      const date = item.scheduledAt ? `📅 ${new Date(item.scheduledAt).toLocaleDateString('en-IN')}` : '';
+
+      return `
+        <div class="content-item">
+          <div class="content-icon ${iconClass}">${icon}</div>
+          <div class="content-meta">
+            <div class="content-name">${escHtml(item.topic || item.name || item.title || 'Untitled')}</div>
+            <div class="content-sub-info">
+              ${dur ? `<span>${dur}</span>` : ''}
+              ${date ? `<span>${date}</span>` : ''}
+              <span style="color:var(--muted);font-family:var(--mono)">${escHtml(item._id || '')}</span>
+            </div>
+          </div>
+          <div class="content-action">›</div>
+        </div>`;
+    }).join('');
+
+    wrap.innerHTML = `<div class="content-list">${rows}</div>`;
+
+    if (items.length >= 10) {
+      wrap.innerHTML += `
+        <div class="page-row">
+          ${page > 1 ? `<button class="page-btn" onclick="fetchContent('${batchId}','${subjectId}','${contentType}',${page-1})">← Prev</button>` : ''}
+          <button class="page-btn active">Page ${page}</button>
+          <button class="page-btn" onclick="fetchContent('${batchId}','${subjectId}','${contentType}',${page+1})">Next →</button>
+        </div>`;
+    }
+  }
+
+  /* ─── Back ─── */
+  function backToBatches() {
+    document.getElementById('panelDetail').classList.remove('active');
+    document.getElementById('panelBatches').classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('nb-batches').classList.add('active');
+  }
+
+  /* ─── Token Panel ─── */
+  function setupTokenPanel() {
+    document.getElementById('tokenValue').textContent = STATE.token;
+
+    document.getElementById('sessionInfo').innerHTML = `
+      <div class="info-cell">
+        <div class="label">Phone</div>
+        <div class="value">+91 ${escHtml(STATE.phone)}</div>
+      </div>
+      <div class="info-cell">
+        <div class="label">Login Time</div>
+        <div class="value">${new Date(STATE.loginTime).toLocaleString('en-IN',{timeZone:'Asia/Kolkata'})}</div>
+      </div>
+      <div class="info-cell">
+        <div class="label">Batches</div>
+        <div class="value">${STATE.batches.length} purchased</div>
+      </div>
+    `;
+
+    document.getElementById('endpointList').innerHTML = [
+      'POST /api/auth/send-otp',
+      'POST /api/auth/verify-otp',
+      'GET  /api/my-batches?phone=...',
+      'GET  /api/batches/:id/details',
+      'GET  /api/batches/:id/subject/:sid/contents',
+      'GET  /api/batches/:id/subject/:sid/topics',
+      'GET  /api/batches/:id/subject/:sid/schedule/:schedId',
+      'GET  /api/all-batches',
+    ].map(ep => `<div style="padding:6px 10px; background:#08080F; border-radius:6px; border:1px solid var(--border2)">${ep}</div>`).join('');
+  }
+
+  function copyToken() {
+    navigator.clipboard.writeText(STATE.token).then(() => {
+      const btn = event.target;
+      const orig = btn.textContent;
+      btn.textContent = '✓ Copied!';
+      setTimeout(() => btn.textContent = orig, 2000);
+    });
+  }
+
+  function copyBearer() {
+    navigator.clipboard.writeText(`Authorization: Bearer ${STATE.token}`).then(() => {
+      const btn = event.target;
+      const orig = btn.textContent;
+      btn.textContent = '✓ Copied!';
+      setTimeout(() => btn.textContent = orig, 2000);
+    });
+  }
+
+  /* ─── Admin Token Manager ─── */
+  async function adminAddToken() {
+    const token = document.getElementById('adminTokenInput').value.trim();
+    const label = document.getElementById('adminLabelInput').value.trim();
+    const resultEl = document.getElementById('adminAddResult');
+    const btn      = document.getElementById('adminAddBtn');
+    const spinner  = document.getElementById('adminAddSpinner');
+    const lbl      = document.getElementById('adminAddLabel');
+
+    if (!token) { resultEl.innerHTML = '<span style="color:var(--red)">❌ Token daalo pehle</span>'; return; }
+
+    btn.disabled = true; spinner.style.display = 'inline-block'; lbl.textContent = 'Fetching...';
+    resultEl.innerHTML = '';
+
+    try {
+      const r = await fetch('/api/admin/add-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, label }),
+      });
+      const d = await r.json();
+
+      if (d.success) {
+        const bLines = d.batches.map((b,i) =>
+          `<div style="padding:8px 10px;background:#08080F;border-radius:8px;border:1px solid var(--border2);margin-bottom:6px;display:flex;gap:10px;align-items:center;">
+            ${b.thumbnail ? `<img src="${escHtml(b.thumbnail)}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">` : '<div style="width:44px;height:44px;border-radius:8px;background:rgba(255,107,0,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">📚</div>'}
+            <div><div style="font-size:13px;font-weight:600">${escHtml(b.name)}</div><div style="font-size:11px;color:var(--muted2);font-family:var(--mono)">${escHtml(b.id)}</div></div>
+          </div>`
+        ).join('');
+
+        resultEl.innerHTML = `
+          <div style="color:var(--green);font-weight:600;margin-bottom:8px">${d.isNew ? '✅ Token Add Hua!' : '🔄 Token Refresh Hua!'} ${d.batchCount} batches</div>
+          <div style="font-size:12px;color:var(--muted2);margin-bottom:8px">👤 ${escHtml(d.user?.name||'-')} · 📱 ${escHtml(d.user?.phone||'-')}</div>
+          ${bLines}
+          <div style="font-size:11px;color:var(--muted2);margin-top:6px">🔔 Telegram channel pe post ho gaya!</div>`;
+
+        document.getElementById('adminTokenInput').value = '';
+        document.getElementById('adminLabelInput').value = '';
+        loadAdminTokens();
+      } else {
+        resultEl.innerHTML = `<span style="color:var(--red)">❌ ${escHtml(d.message)}</span>`;
+      }
+    } catch (e) {
+      resultEl.innerHTML = `<span style="color:var(--red)">❌ Server error: ${escHtml(e.message)}</span>`;
+    } finally {
+      btn.disabled = false; spinner.style.display = 'none'; lbl.textContent = '✅ Add Token & Fetch Batches';
+    }
+  }
+
+  async function loadAdminTokens() {
+    const el = document.getElementById('adminTokenList');
+    el.innerHTML = '<div class="loading-state"><div class="spin-icon"></div><div>Loading…</div></div>';
+    try {
+      const r = await fetch('/api/admin/tokens');
+      const d = await r.json();
+      const tokens = d.tokens || [];
+
+      if (!tokens.length) {
+        el.innerHTML = '<div style="color:var(--muted2);font-size:13px;padding:20px 0">📭 Koi saved token nahi. Upar se add karo.</div>';
+        return;
+      }
+
+      el.innerHTML = tokens.map(t => {
+        const batchCards = t.batches.map(b =>
+          `<div style="display:flex;gap:8px;align-items:center;padding:6px 8px;background:#08080F;border-radius:8px;margin-bottom:4px;">
+            ${b.thumbnail ? `<img src="${escHtml(b.thumbnail)}" style="width:36px;height:36px;border-radius:6px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">` : '<span style="width:36px;height:36px;border-radius:6px;background:rgba(255,107,0,0.1);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px">📚</span>'}
+            <div style="min-width:0">
+              <div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(b.name)}</div>
+              <div style="font-size:10px;color:var(--muted2);font-family:var(--mono)">${escHtml(b.id)}</div>
+            </div>
+          </div>`
+        ).join('');
+
+        return `
+        <div class="token-card" style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+            <div>
+              <div style="font-size:14px;font-weight:600">🏷 ${escHtml(t.label)}</div>
+              <div style="font-size:12px;color:var(--muted2)">👤 ${escHtml(t.user?.name||'-')} · 📱 ${escHtml(t.user?.phone||'-')}</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">📅 ${t.addedAt?.slice(0,10)} · 📚 ${t.batchCount} batches</div>
+            </div>
+            <div style="display:flex;gap:6px;flex-shrink:0">
+              <button class="chip-btn" onclick="adminRefresh('${escHtml(t.token)}',this)" style="font-size:11px">🔄</button>
+              <button class="chip-btn" onclick="adminRemove('${escHtml(t.token)}',this)" style="font-size:11px;color:var(--red)">🗑</button>
+            </div>
+          </div>
+          <div style="font-size:10px;color:var(--muted2);font-family:var(--mono);background:#08080F;padding:6px 8px;border-radius:6px;margin-bottom:10px;word-break:break-all">${escHtml(t.token.slice(0,40))}…</div>
+          ${batchCards || '<div style="font-size:12px;color:var(--muted2)">— Koi batch nahi</div>'}
+        </div>`;
+      }).join('');
+
+    } catch (e) {
+      el.innerHTML = `<span style="color:var(--red)">❌ Load failed: ${escHtml(e.message)}</span>`;
+    }
+  }
+
+  async function adminRefresh(token, btn) {
+    btn.textContent = '⏳'; btn.disabled = true;
+    try {
+      const r = await fetch(`/api/admin/refresh-token/${encodeURIComponent(token)}`, { method: 'POST' });
+      const d = await r.json();
+      if (d.success) { loadAdminTokens(); }
+      else { btn.textContent = '❌'; setTimeout(() => { btn.textContent='🔄'; btn.disabled=false; }, 2000); }
+    } catch { btn.textContent = '❌'; setTimeout(() => { btn.textContent='🔄'; btn.disabled=false; }, 2000); }
+  }
+
+  async function adminRemove(token, btn) {
+    if (!confirm('Yeh token remove karna chahte ho?')) return;
+    btn.textContent = '⏳'; btn.disabled = true;
+    try {
+      await fetch(`/api/admin/tokens/${encodeURIComponent(token)}`, { method: 'DELETE' });
+      loadAdminTokens();
+    } catch { btn.textContent = '❌'; setTimeout(() => { btn.textContent='🗑'; btn.disabled=false; }, 2000); }
+  }
+
+  /* ─── Logout ─── */
+  function logout() {
+    STATE = { phone:'', token:'', batches:[], currentBatch:null, currentSubjectId:null,
+      currentContentType:'exercises-notes-videos', currentPage:1, subjects:[], timerRef:null, loginTime:null };
+    document.getElementById('dashScreen').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('phoneInput').value = '';
+    ['o1','o2','o3','o4','o5','o6'].forEach(id => document.getElementById(id).value = '');
+    goStep(1);
+  }
+
+  /* ─── Utils ─── */
+  function escHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = String(str || '');
+    return d.innerHTML;
+  }
+
+  /* ─── Keyboard ─── */
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('phoneInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') sendOtp();
+    });
+  });
+</script>
+</body>
+</html>
